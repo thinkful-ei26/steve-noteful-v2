@@ -7,33 +7,30 @@ const router = express.Router()
 
 // Get All (and search by query)
 router.get('/', (req, res, next) => {
-  const searchTerm = req.query.searchTerm
+  const {searchTerm} = req.query
 
   knex
-    .select(
-      'notes.id',
-      'title',
-      'content',
-      'folders.id as folderId',
-      'folders.name as folderName'
-    )
+    .select('notes.id', 'title', 'content')
     .from('notes')
-    .leftJoin('folders', 'notes.folder_id', 'folders.id')
-    .modify(function(queryBuilder) {
+    .modify(queryBuilder => {
       if (searchTerm) {
-        queryBuilder.where('title', 'like', `%${searchTerm}%`)
-      }
-    })
-    .modify(function(queryBuilder) {
-      if (folderId) {
-        queryBuilder.where('folder_id', folderId)
+        queryBuilder.where('content', 'like', `%${searchTerm}%`) //!!!!!! searches content
       }
     })
     .orderBy('notes.id')
     .then(results => {
       res.json(results)
     })
-    .catch(err => next(err))
+    .catch(err => {
+      next(err)
+    })
+  // notes.filter(searchTerm)
+  //   .then(list => {
+  //     res.json(list);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 })
 
 // Get a single item
